@@ -1,0 +1,1046 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - India Economic Data</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    
+    <style>
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .sidebar {
+            transition: transform 0.3s ease;
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar.hidden-mobile {
+                transform: translateX(-100%);
+            }
+        }
+        
+        .metric-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+        }
+        
+        .metric-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.2);
+        }
+        
+        .chart-container {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+        
+        .indicator-btn {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .indicator-btn:hover {
+            background: #f3f4f6;
+        }
+        
+        .indicator-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Top Navigation -->
+    <nav class="bg-white shadow-sm fixed w-full top-0 z-50">
+        <div class="px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <button id="sidebar-toggle" class="mr-4 text-gray-600 hover:text-purple-600 md:hidden">
+                        <i class="fas fa-bars text-xl"></i>
+                    </button>
+                    <a href="index.html" class="text-xl font-bold gradient-bg bg-clip-text text-transparent">
+                        🇮🇳 India Economic Dashboard
+                    </a>
+                </div>
+                <div class="flex items-center space-x-4">
+                   
+                    <a href="comparison.html" class="hidden md:inline-flex items-center text-white bg-gradient-to-r from-orange-500 to-green-600 hover:from-orange-600 hover:to-green-700 px-4 py-2 rounded-lg font-medium">
+                        <i class="fas fa-globe mr-2"></i>
+                        Compare
+                    </a>
+                    <a href="index.html" class="text-gray-600 hover:text-purple-600 font-medium">
+                        <i class="fas fa-home"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="flex pt-16">
+        <!-- Sidebar -->
+        <aside id="sidebar" class="sidebar w-64 bg-white h-screen sticky top-16 overflow-y-auto border-r">
+            <div class="p-6">
+                <h3 class="text-sm font-bold text-gray-500 uppercase mb-4">Select Indicator</h3>
+                <div id="indicators-list" class="space-y-2">
+                    <!-- Indicators will be loaded here -->
+                </div>
+                
+                <div class="mt-8">
+                    <h3 class="text-sm font-bold text-gray-500 uppercase mb-4">Chart Type</h3>
+                    <div class="space-y-2">
+                        <button class="chart-type-btn w-full text-left px-4 py-2 rounded-lg hover:bg-gray-100 active" data-type="line">
+                            <i class="fas fa-chart-line mr-2"></i> Line Chart
+                        </button>
+                        <button class="chart-type-btn w-full text-left px-4 py-2 rounded-lg hover:bg-gray-100" data-type="bar">
+                            <i class="fas fa-chart-bar mr-2"></i> Bar Chart
+                        </button>
+                        <button class="chart-type-btn w-full text-left px-4 py-2 rounded-lg hover:bg-gray-100" data-type="area">
+                            <i class="fas fa-chart-area mr-2"></i> Area Chart
+                        </button>
+                        <button class="chart-type-btn w-full text-left px-4 py-2 rounded-lg hover:bg-gray-100" data-type="pie">
+                            <i class="fas fa-chart-pie mr-2"></i> Pie Chart
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="mt-8">
+                    <h3 class="text-sm font-bold text-gray-500 uppercase mb-4">Date Range</h3>
+                    <select id="date-range" class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:border-purple-500">
+                        <option value="all" selected>All Time</option>
+                        <option value="5y">Last 5 Years</option>
+                        <option value="3y">Last 3 Years</option>
+                    </select>
+                </div>
+                
+                <div id="region-filter" class="mt-8 hidden">
+                    <h3 class="text-sm font-bold text-gray-500 uppercase mb-4">Region</h3>
+                    <div class="space-y-2">
+                        <label class="flex items-center">
+                            <input type="checkbox" class="region-checkbox mr-2" value="Urban" checked>
+                            <span>Urban</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="checkbox" class="region-checkbox mr-2" value="Rural" checked>
+                            <span>Rural</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 p-6 overflow-y-auto">
+            <!-- Metrics Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+                <div class="metric-card">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-sm font-medium text-gray-600">Latest Value</span>
+                        <i class="fas fa-chart-line text-purple-500"></i>
+                    </div>
+                    <div id="metric-latest" class="text-3xl font-bold text-gray-900">--</div>
+                    <div id="metric-change" class="text-sm mt-1">
+                        <span class="text-green-600"><i class="fas fa-arrow-up"></i> --</span>
+                    </div>
+                </div>
+                
+                <div class="metric-card">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-sm font-medium text-gray-600">Average</span>
+                        <i class="fas fa-calculator text-blue-500"></i>
+                    </div>
+                    <div id="metric-average" class="text-3xl font-bold text-gray-900">--</div>
+                    <div class="text-sm text-gray-500 mt-1">Mean value</div>
+                </div>
+                
+                <div class="metric-card">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-sm font-medium text-gray-600">Maximum</span>
+                        <i class="fas fa-arrow-up text-green-500"></i>
+                    </div>
+                    <div id="metric-max" class="text-3xl font-bold text-gray-900">--</div>
+                    <div class="text-sm text-gray-500 mt-1">Peak value</div>
+                </div>
+                
+                <div class="metric-card">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-sm font-medium text-gray-600">Minimum</span>
+                        <i class="fas fa-arrow-down text-red-500"></i>
+                    </div>
+                    <div id="metric-min" class="text-3xl font-bold text-gray-900">--</div>
+                    <div class="text-sm text-gray-500 mt-1">Lowest value</div>
+                </div>
+            </div>
+
+            <!-- Main Chart -->
+            <div class="chart-container mb-6">
+                <div class="flex items-center justify-between mb-6">
+                    <div>
+                        <h2 id="chart-title" class="text-2xl font-bold text-gray-900">GDP Growth Rate</h2>
+                        <p id="chart-subtitle" class="text-gray-600">Quarterly growth trends</p>
+                    </div>
+                    <div class="flex space-x-2">
+                        <button id="export-btn" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition">
+                            <i class="fas fa-download mr-2"></i>Export
+                        </button>
+                        <button id="refresh-btn" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition">
+                            <i class="fas fa-sync-alt mr-2"></i>Refresh
+                        </button>
+                    </div>
+                </div>
+                <div style="position: relative; height: 400px;">
+                    <canvas id="mainChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Chart Showcase Grid -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                <!-- Doughnut Chart -->
+                <div class="chart-container">
+                    <div class="flex items-center justify-between mb-6">
+                        <div>
+                            <h3 class="text-xl font-bold text-gray-900">Sector Distribution</h3>
+                            <p class="text-gray-600">Economic sectors contribution</p>
+                        </div>
+                        <button id="update-doughnut-btn" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">
+                            <i class="fas fa-sync-alt mr-2"></i>Update
+                        </button>
+                    </div>
+                    <div style="position: relative; height: 300px;">
+                        <canvas id="doughnutChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Radar Chart -->
+                <div class="chart-container">
+                    <div class="flex items-center justify-between mb-6">
+                        <div>
+                            <h3 class="text-xl font-bold text-gray-900">Economic Performance Radar</h3>
+                            <p class="text-gray-600">Multi-dimensional analysis</p>
+                        </div>
+                        <button id="update-radar-btn" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition">
+                            <i class="fas fa-sync-alt mr-2"></i>Update
+                        </button>
+                    </div>
+                    <div style="position: relative; height: 300px;">
+                        <canvas id="radarChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Polar Area and Scatter Charts -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                <!-- Polar Area Chart -->
+                <div class="chart-container">
+                    <div class="flex items-center justify-between mb-6">
+                        <div>
+                            <h3 class="text-xl font-bold text-gray-900">Regional Growth Index</h3>
+                            <p class="text-gray-600">State-wise performance metrics</p>
+                        </div>
+                        <button id="update-polar-btn" class="px-4 py-2 bg-pink-600 text-white rounded-lg hover:bg-pink-700 transition">
+                            <i class="fas fa-sync-alt mr-2"></i>Update
+                        </button>
+                    </div>
+                    <div style="position: relative; height: 300px;">
+                        <canvas id="polarChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Scatter Chart -->
+                <div class="chart-container">
+                    <div class="flex items-center justify-between mb-6">
+                        <div>
+                            <h3 class="text-xl font-bold text-gray-900">GDP vs Inflation Correlation</h3>
+                            <p class="text-gray-600">Relationship analysis</p>
+                        </div>
+                        <button id="update-scatter-btn" class="px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition">
+                            <i class="fas fa-sync-alt mr-2"></i>Update
+                        </button>
+                    </div>
+                    <div style="position: relative; height: 300px;">
+                        <canvas id="scatterChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mixed Chart (Full Width) -->
+            <div class="chart-container mb-6">
+                <div class="flex items-center justify-between mb-6">
+                    <div>
+                        <h3 class="text-xl font-bold text-gray-900">Economic Overview - Mixed Chart</h3>
+                        <p class="text-gray-600">Combined bar and line visualization</p>
+                    </div>
+                    <button id="update-mixed-btn" class="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition">
+                        <i class="fas fa-sync-alt mr-2"></i>Update
+                    </button>
+                </div>
+                <div style="position: relative; height: 400px;">
+                    <canvas id="mixedChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Data Table -->
+            <div class="chart-container">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-xl font-bold text-gray-900">Data Table</h3>
+                    <button id="export-csv-btn" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition">
+                        <i class="fas fa-file-csv mr-2"></i>Export CSV
+                    </button>
+                </div>
+                <div class="overflow-x-auto">
+                    <table id="data-table" class="w-full">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Value</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Change</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-body" class="bg-white divide-y divide-gray-200">
+                            <!-- Data will be loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // State
+        let currentIndicator = 'gdp';
+        let currentChartType = 'line';
+        let chartInstance = null;
+        let doughnutChartInstance = null;
+        let radarChartInstance = null;
+        let polarChartInstance = null;
+        let scatterChartInstance = null;
+        let mixedChartInstance = null;
+        let currentData = [];
+        let indicatorsMetadata = {}; // Store indicator metadata
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            loadIndicators();
+            loadData();
+            loadDoughnutChart();
+            loadRadarChart();
+            loadPolarChart();
+            loadScatterChart();
+            loadMixedChart();
+            
+            // Event listeners
+            document.getElementById('sidebar-toggle').addEventListener('click', toggleSidebar);
+            document.getElementById('date-range').addEventListener('change', loadData);
+            document.getElementById('refresh-btn').addEventListener('click', loadData);
+            document.getElementById('export-btn').addEventListener('click', exportChart);
+            document.getElementById('export-csv-btn').addEventListener('click', exportCSV);
+            document.getElementById('update-doughnut-btn').addEventListener('click', loadDoughnutChart);
+            document.getElementById('update-radar-btn').addEventListener('click', loadRadarChart);
+            document.getElementById('update-polar-btn').addEventListener('click', loadPolarChart);
+            document.getElementById('update-scatter-btn').addEventListener('click', loadScatterChart);
+            document.getElementById('update-mixed-btn').addEventListener('click', loadMixedChart);
+            
+            document.querySelectorAll('.chart-type-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    document.querySelectorAll('.chart-type-btn').forEach(b => b.classList.remove('active'));
+                    e.target.classList.add('active');
+                    currentChartType = e.target.dataset.type;
+                    updateChart();
+                });
+            });
+        });
+        
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('hidden-mobile');
+        }
+        
+        async function loadIndicators() {
+            try {
+                const response = await fetch('/api/indicators');
+                const indicators = await response.json();
+                
+                // Store metadata for each indicator
+                indicators.forEach(ind => {
+                    indicatorsMetadata[ind.id] = {
+                        name: ind.name,
+                        description: ind.description,
+                        unit: ind.unit,
+                        icon: ind.icon
+                    };
+                });
+                
+                const list = document.getElementById('indicators-list');
+                list.innerHTML = indicators.map(ind => `
+                    <button class="indicator-btn w-full text-left px-4 py-3 rounded-lg ${ind.id === 'gdp' ? 'active' : ''}" data-id="${ind.id}">
+                        <div class="flex items-center">
+                            <span class="text-2xl mr-3">${ind.icon}</span>
+                            <div class="flex-1">
+                                <div class="font-medium text-sm">${ind.name}</div>
+                                <div class="text-xs text-gray-500">${ind.category}</div>
+                            </div>
+                        </div>
+                    </button>
+                `).join('');
+                
+                document.querySelectorAll('.indicator-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        document.querySelectorAll('.indicator-btn').forEach(b => b.classList.remove('active'));
+                        e.currentTarget.classList.add('active');
+                        currentIndicator = e.currentTarget.dataset.id;
+                        loadData();
+                    });
+                });
+            } catch (error) {
+                console.error('Error loading indicators:', error);
+            }
+        }
+        
+        async function loadData() {
+            try {
+                const dateRange = document.getElementById('date-range').value;
+                let startDate = null;
+                
+                if (dateRange !== 'all') {
+                    const now = new Date();
+                    let years = 1;
+                    if (dateRange === '5y') years = 5;
+                    else if (dateRange === '3y') years = 3;
+                    else if (dateRange === '1y') years = 1;
+                    const targetDate = new Date(now);
+                    targetDate.setFullYear(targetDate.getFullYear() - years);
+                    startDate = targetDate.toISOString().split('T')[0];
+                }
+                
+                let url = `/api/data/${currentIndicator}`;
+                if (startDate) url += `?start_date=${startDate}`;
+                
+                const response = await fetch(url);
+                currentData = await response.json();
+                
+                // Update chart title and subtitle based on current indicator
+                updateChartTitle();
+                
+                await loadStatistics();
+                updateChart();
+                updateTable();
+            } catch (error) {
+                console.error('Error loading data:', error);
+                alert('Error loading data: ' + error.message);
+            }
+        }
+        
+        async function loadStatistics() {
+            try {
+                const response = await fetch(`/api/statistics/${currentIndicator}`);
+                const stats = await response.json();
+                
+                document.getElementById('metric-latest').textContent = stats.latest?.toFixed(2) || '--';
+                document.getElementById('metric-average').textContent = stats.mean?.toFixed(2) || '--';
+                document.getElementById('metric-max').textContent = stats.max?.toFixed(2) || '--';
+                document.getElementById('metric-min').textContent = stats.min?.toFixed(2) || '--';
+                
+                const change = stats.change || 0;
+                const changeEl = document.getElementById('metric-change');
+                if (change >= 0) {
+                    changeEl.innerHTML = `<span class="text-green-600"><i class="fas fa-arrow-up"></i> ${change.toFixed(2)}</span>`;
+                } else {
+                    changeEl.innerHTML = `<span class="text-red-600"><i class="fas fa-arrow-down"></i> ${Math.abs(change).toFixed(2)}</span>`;
+                }
+            } catch (error) {
+                console.error('Error loading statistics:', error);
+            }
+        }
+        
+        function updateChartTitle() {
+            // Update the chart title and subtitle based on selected indicator
+            const metadata = indicatorsMetadata[currentIndicator];
+            if (metadata) {
+                document.getElementById('chart-title').textContent = metadata.name;
+                document.getElementById('chart-subtitle').textContent = metadata.description;
+            }
+        }
+        
+        function updateChart() {
+            const ctx = document.getElementById('mainChart').getContext('2d');
+            
+            if (chartInstance) {
+                chartInstance.destroy();
+            }
+            
+            const labels = currentData.map(d => {
+                // Handle both date string and date object
+                if (typeof d.date === 'string') return d.date;
+                if (d.year && d.quarter) return `${d.year} ${d.quarter}`;
+                if (d.year) return d.year.toString();
+                return 'Unknown';
+            });
+            const values = currentData.map(d => d.value || d.inflation || d.exports || d.volume || 0);
+            
+            // For pie chart, use the latest data points (up to 6 for better visualization)
+            let chartLabels = labels;
+            let chartValues = values;
+            
+            if (currentChartType === 'pie') {
+                // Use last 6 data points for pie chart
+                const dataLimit = Math.min(6, currentData.length);
+                chartLabels = labels.slice(-dataLimit);
+                chartValues = values.slice(-dataLimit);
+            }
+            
+            const config = {
+                type: currentChartType === 'area' ? 'line' : currentChartType,
+                data: {
+                    labels: chartLabels,
+                    datasets: [{
+                        label: 'Value',
+                        data: chartValues,
+                        backgroundColor: currentChartType === 'pie' 
+                            ? [
+                                'rgba(255, 99, 132, 0.8)',
+                                'rgba(54, 162, 235, 0.8)',
+                                'rgba(255, 206, 86, 0.8)',
+                                'rgba(75, 192, 192, 0.8)',
+                                'rgba(153, 102, 255, 0.8)',
+                                'rgba(255, 159, 64, 0.8)'
+                            ]
+                            : currentChartType === 'bar' 
+                            ? 'rgba(102, 126, 234, 0.5)'
+                            : currentChartType === 'area'
+                            ? 'rgba(102, 126, 234, 0.2)'
+                            : 'rgba(102, 126, 234, 0.1)',
+                        borderColor: currentChartType === 'pie'
+                            ? [
+                                'rgba(255, 99, 132, 1)',
+                                'rgba(54, 162, 235, 1)',
+                                'rgba(255, 206, 86, 1)',
+                                'rgba(75, 192, 192, 1)',
+                                'rgba(153, 102, 255, 1)',
+                                'rgba(255, 159, 64, 1)'
+                            ]
+                            : 'rgba(102, 126, 234, 1)',
+                        borderWidth: 2,
+                        fill: currentChartType === 'area',
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: currentChartType === 'pie',
+                            position: currentChartType === 'pie' ? 'right' : 'top',
+                            labels: {
+                                padding: 15,
+                                font: {
+                                    size: 12
+                                }
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            padding: 12,
+                            titleColor: '#fff',
+                            bodyColor: '#fff',
+                            borderColor: 'rgba(102, 126, 234, 1)',
+                            borderWidth: 1,
+                            callbacks: currentChartType === 'pie' ? {
+                                label: function(context) {
+                                    const label = context.label || '';
+                                    const value = context.parsed || 0;
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = ((value / total) * 100).toFixed(1);
+                                    return label + ': ' + value.toFixed(2) + ' (' + percentage + '%)';
+                                }
+                            } : {}
+                        }
+                    },
+                    scales: currentChartType === 'pie' ? {} : {
+                        y: {
+                            beginAtZero: false,
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            };
+            
+            chartInstance = new Chart(ctx, config);
+        }
+        
+        function updateTable() {
+            const tbody = document.getElementById('table-body');
+            tbody.innerHTML = currentData.map((d, i) => {
+                const value = d.value || d.inflation || d.exports || d.volume || 0;
+                const prevValue = i > 0 ? (currentData[i-1].value || currentData[i-1].inflation || currentData[i-1].exports || currentData[i-1].volume || 0) : value;
+                const change = value - prevValue;
+                const changeClass = change >= 0 ? 'text-green-600' : 'text-red-600';
+                const changeIcon = change >= 0 ? 'fa-arrow-up' : 'fa-arrow-down';
+                
+                return `
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${d.date}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${value.toFixed(2)}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm ${changeClass}">
+                            <i class="fas ${changeIcon}"></i> ${Math.abs(change).toFixed(2)}
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+        
+        function exportChart() {
+            if (chartInstance) {
+                const url = chartInstance.toBase64Image();
+                const link = document.createElement('a');
+                link.download = `${currentIndicator}-chart.png`;
+                link.href = url;
+                link.click();
+            }
+        }
+        
+        function exportCSV() {
+            const headers = ['Date', 'Value'];
+            const rows = currentData.map(d => {
+                const value = d.value || d.inflation || d.exports || d.volume || 0;
+                return [d.date, value];
+            });
+            
+            let csv = headers.join(',') + '\n';
+            csv += rows.map(row => row.join(',')).join('\n');
+            
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.download = `${currentIndicator}-data.csv`;
+            link.href = url;
+            link.click();
+        }
+        
+        async function loadDoughnutChart() {
+            try {
+                const ctx = document.getElementById('doughnutChart').getContext('2d');
+                
+                if (doughnutChartInstance) {
+                    doughnutChartInstance.destroy();
+                }
+                
+                // Sample data for economic sectors
+                doughnutChartInstance = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Agriculture', 'Industry', 'Services', 'Manufacturing', 'Technology'],
+                        datasets: [{
+                            label: 'Sector Contribution (%)',
+                            data: [18.5, 26.3, 48.9, 15.8, 12.4],
+                            backgroundColor: [
+                                'rgba(255, 99, 132, 0.8)',
+                                'rgba(54, 162, 235, 0.8)',
+                                'rgba(255, 206, 86, 0.8)',
+                                'rgba(75, 192, 192, 0.8)',
+                                'rgba(153, 102, 255, 0.8)'
+                            ],
+                            borderColor: [
+                                'rgba(255, 99, 132, 1)',
+                                'rgba(54, 162, 235, 1)',
+                                'rgba(255, 206, 86, 1)',
+                                'rgba(75, 192, 192, 1)',
+                                'rgba(153, 102, 255, 1)'
+                            ],
+                            borderWidth: 2
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'right',
+                                labels: {
+                                    padding: 15,
+                                    font: {
+                                        size: 12
+                                    }
+                                }
+                            },
+                            tooltip: {
+                                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                                padding: 12,
+                                callbacks: {
+                                    label: function(context) {
+                                        return context.label + ': ' + context.parsed + '%';
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            } catch (error) {
+                console.error('Error loading doughnut chart:', error);
+            }
+        }
+        
+        async function loadRadarChart() {
+            try {
+                const ctx = document.getElementById('radarChart').getContext('2d');
+                
+                if (radarChartInstance) {
+                    radarChartInstance.destroy();
+                }
+                
+                radarChartInstance = new Chart(ctx, {
+                    type: 'radar',
+                    data: {
+                        labels: ['GDP Growth', 'Employment', 'Exports', 'Investment', 'Innovation', 'Infrastructure'],
+                        datasets: [
+                            {
+                                label: 'Current Year',
+                                data: [7.2, 85, 72, 68, 58, 75],
+                                backgroundColor: 'rgba(102, 126, 234, 0.2)',
+                                borderColor: 'rgba(102, 126, 234, 1)',
+                                borderWidth: 2,
+                                pointBackgroundColor: 'rgba(102, 126, 234, 1)',
+                                pointBorderColor: '#fff',
+                                pointHoverBackgroundColor: '#fff',
+                                pointHoverBorderColor: 'rgba(102, 126, 234, 1)'
+                            },
+                            {
+                                label: 'Previous Year',
+                                data: [6.5, 82, 68, 65, 55, 70],
+                                backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                                borderColor: 'rgba(255, 99, 132, 1)',
+                                borderWidth: 2,
+                                pointBackgroundColor: 'rgba(255, 99, 132, 1)',
+                                pointBorderColor: '#fff',
+                                pointHoverBackgroundColor: '#fff',
+                                pointHoverBorderColor: 'rgba(255, 99, 132, 1)'
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'top'
+                            },
+                            tooltip: {
+                                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                                padding: 12
+                            }
+                        },
+                        scales: {
+                            r: {
+                                beginAtZero: true,
+                                max: 100,
+                                ticks: {
+                                    stepSize: 20
+                                }
+                            }
+                        }
+                    }
+                });
+            } catch (error) {
+                console.error('Error loading radar chart:', error);
+            }
+        }
+        
+        async function loadPolarChart() {
+            try {
+                const ctx = document.getElementById('polarChart').getContext('2d');
+                
+                if (polarChartInstance) {
+                    polarChartInstance.destroy();
+                }
+                
+                polarChartInstance = new Chart(ctx, {
+                    type: 'polarArea',
+                    data: {
+                        labels: ['Maharashtra', 'Tamil Nadu', 'Karnataka', 'Gujarat', 'Uttar Pradesh', 'West Bengal'],
+                        datasets: [{
+                            label: 'State GDP Index',
+                            data: [95, 82, 78, 85, 72, 68],
+                            backgroundColor: [
+                                'rgba(255, 99, 132, 0.6)',
+                                'rgba(54, 162, 235, 0.6)',
+                                'rgba(255, 206, 86, 0.6)',
+                                'rgba(75, 192, 192, 0.6)',
+                                'rgba(153, 102, 255, 0.6)',
+                                'rgba(255, 159, 64, 0.6)'
+                            ],
+                            borderColor: [
+                                'rgba(255, 99, 132, 1)',
+                                'rgba(54, 162, 235, 1)',
+                                'rgba(255, 206, 86, 1)',
+                                'rgba(75, 192, 192, 1)',
+                                'rgba(153, 102, 255, 1)',
+                                'rgba(255, 159, 64, 1)'
+                            ],
+                            borderWidth: 2
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'right',
+                                labels: {
+                                    padding: 10,
+                                    font: {
+                                        size: 11
+                                    }
+                                }
+                            },
+                            tooltip: {
+                                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                                padding: 12
+                            }
+                        },
+                        scales: {
+                            r: {
+                                beginAtZero: true,
+                                ticks: {
+                                    stepSize: 20
+                                }
+                            }
+                        }
+                    }
+                });
+            } catch (error) {
+                console.error('Error loading polar chart:', error);
+            }
+        }
+        
+        async function loadScatterChart() {
+            try {
+                const ctx = document.getElementById('scatterChart').getContext('2d');
+                
+                if (scatterChartInstance) {
+                    scatterChartInstance.destroy();
+                }
+                
+                // Generate scatter data showing GDP vs Inflation relationship
+                const scatterData = [
+                    {x: 5.5, y: 4.2}, {x: 6.2, y: 4.8}, {x: 7.1, y: 5.2}, 
+                    {x: 6.8, y: 4.9}, {x: 7.5, y: 5.5}, {x: 8.2, y: 6.1},
+                    {x: 7.8, y: 5.8}, {x: 6.5, y: 5.0}, {x: 7.2, y: 5.3},
+                    {x: 8.0, y: 6.0}, {x: 6.9, y: 5.1}, {x: 7.6, y: 5.7}
+                ];
+                
+                scatterChartInstance = new Chart(ctx, {
+                    type: 'scatter',
+                    data: {
+                        datasets: [{
+                            label: 'GDP vs Inflation',
+                            data: scatterData,
+                            backgroundColor: 'rgba(102, 126, 234, 0.6)',
+                            borderColor: 'rgba(102, 126, 234, 1)',
+                            borderWidth: 2,
+                            pointRadius: 8,
+                            pointHoverRadius: 10
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: true,
+                                position: 'top'
+                            },
+                            tooltip: {
+                                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                                padding: 12,
+                                callbacks: {
+                                    label: function(context) {
+                                        return 'GDP: ' + context.parsed.x.toFixed(1) + '%, Inflation: ' + context.parsed.y.toFixed(1) + '%';
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                title: {
+                                    display: true,
+                                    text: 'GDP Growth Rate (%)',
+                                    font: {
+                                        size: 14,
+                                        weight: 'bold'
+                                    }
+                                },
+                                grid: {
+                                    color: 'rgba(0, 0, 0, 0.05)'
+                                }
+                            },
+                            y: {
+                                title: {
+                                    display: true,
+                                    text: 'Inflation Rate (%)',
+                                    font: {
+                                        size: 14,
+                                        weight: 'bold'
+                                    }
+                                },
+                                grid: {
+                                    color: 'rgba(0, 0, 0, 0.05)'
+                                }
+                            }
+                        }
+                    }
+                });
+            } catch (error) {
+                console.error('Error loading scatter chart:', error);
+            }
+        }
+        
+        async function loadMixedChart() {
+            try {
+                const ctx = document.getElementById('mixedChart').getContext('2d');
+                
+                if (mixedChartInstance) {
+                    mixedChartInstance.destroy();
+                }
+                
+                const labels = ['Q1', 'Q2', 'Q3', 'Q4', 'Q1', 'Q2', 'Q3', 'Q4'];
+                
+                mixedChartInstance = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [
+                            {
+                                label: 'GDP (Bar)',
+                                type: 'bar',
+                                data: [6.8, 7.2, 7.5, 7.1, 6.9, 7.3, 7.6, 7.8],
+                                backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                                borderColor: 'rgba(54, 162, 235, 1)',
+                                borderWidth: 2,
+                                order: 2
+                            },
+                            {
+                                label: 'Inflation (Line)',
+                                type: 'line',
+                                data: [4.5, 4.8, 5.2, 5.0, 4.9, 5.1, 5.3, 5.5],
+                                backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                                borderColor: 'rgba(255, 99, 132, 1)',
+                                borderWidth: 3,
+                                fill: true,
+                                tension: 0.4,
+                                order: 1
+                            },
+                            {
+                                label: 'Employment Rate (Line)',
+                                type: 'line',
+                                data: [82, 83, 84, 83.5, 84, 85, 85.5, 86],
+                                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                                borderColor: 'rgba(75, 192, 192, 1)',
+                                borderWidth: 3,
+                                fill: false,
+                                tension: 0.4,
+                                order: 1
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: true,
+                                position: 'top',
+                                labels: {
+                                    padding: 15,
+                                    font: {
+                                        size: 12
+                                    }
+                                }
+                            },
+                            tooltip: {
+                                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                                padding: 12,
+                                titleColor: '#fff',
+                                bodyColor: '#fff',
+                                borderColor: 'rgba(102, 126, 234, 1)',
+                                borderWidth: 1
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: false,
+                                grid: {
+                                    color: 'rgba(0, 0, 0, 0.05)'
+                                },
+                                title: {
+                                    display: true,
+                                    text: 'Percentage (%)',
+                                    font: {
+                                        size: 13,
+                                        weight: 'bold'
+                                    }
+                                }
+                            },
+                            x: {
+                                grid: {
+                                    display: false
+                                },
+                                title: {
+                                    display: true,
+                                    text: 'Quarter',
+                                    font: {
+                                        size: 13,
+                                        weight: 'bold'
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            } catch (error) {
+                console.error('Error loading mixed chart:', error);
+            }
+        }
+    </script>
+</body>
+</html>
