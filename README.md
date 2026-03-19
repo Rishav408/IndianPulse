@@ -15,49 +15,33 @@ A modern, lightweight economic dashboard for India that visualizes key economic 
 ## 🛠️ Tech Stack
 
 ### Frontend
-- **HTML5** + **CSS3** (with CSS Variables)
-- **Vanilla JavaScript** (ES2020+)
-- **Chart.js** for data visualization
-- **Responsive Design** with CSS Grid and Flexbox
+- **Streamlit**: For modern, interactive web interface
+- **Plotly**: For advanced, interactive data visualizations
+- **Responsive Layout**: Native Streamlit container system
 
 ### Backend
 - **Python 3.10+**
-- **Flask** web framework
-- **Pandas** for data processing
-- **NumPy** for numerical operations
-- **Scikit-learn** for analytics
-- **Matplotlib** for server-side chart generation
+- **Pandas**: For high-performance data processing
+- **NumPy**: For numerical computation
+- **Custom Data Processor**: Modular backend logic for economic indicators
 
 ## 📁 Project Structure
 
 ```
 indianpulse/
-├── backend/
-│   ├── app.py                 # Flask application entry point
-│   ├── config.py              # Configuration settings
-│   ├── requirements.txt       # Python dependencies
-│   ├── api/
-│   │   ├── __init__.py
-│   │   ├── indicators.py      # Indicators API endpoints
-│   │   └── charts.py          # Chart generation endpoints
-│   ├── data/
-│   │   ├── generator.py       # Sample data generator
-│   │   └── sample_data/       # Generated CSV/JSON data
-│   └── analytics/
-│       ├── __init__.py
-│       ├── processing.py      # Data processing functions
-│       └── forecasting.py     # Forecasting algorithms
-├── frontend/
-│   ├── index.html             # Main HTML file
-│   ├── css/
-│   │   └── styles.css         # Main stylesheet
-│   ├── js/
-│   │   ├── api.js             # API client
-│   │   ├── ui.js              # UI utilities
-│   │   ├── charts.js          # Chart management
-│   │   └── main.js            # Main application logic
-│   └── assets/
-│       └── logo.svg           # Application logo
+├── app/                       # Main Application files
+│   ├── dashboard.py           # Streamlit dashboard entry point
+│   └── requirements-dashboard.txt
+├── backend/                   # Business logic and processing
+│   ├── data_processor.py      # Core data engine
+│   └── country_comparison.py  # Comparison modules
+├── data/                      # 📊 Economic indicators (CSV)
+├── docs/                      # 📚 Project documentation & guides
+├── scripts/                   # 🚀 Launch and management scripts
+│   ├── run_dashboard.sh       # Main launcher (Run this!)
+│   └── START_PROJECT.sh
+├── utils/                     # 🔧 Data generation utilities
+├── legacy/                    # 📜 Archived Flask application
 └── README.md                  # This file
 ```
 
@@ -95,17 +79,17 @@ indianpulse/
 
 4. **Install dependencies**
    ```bash
-   pip install -r backend/requirements.txt
+   pip install -r app/requirements-dashboard.txt
    ```
 
 5. **Generate sample data**
    ```bash
-   python backend/data/generator.py --generate
+   python utils/generate_csv_data.py
    ```
 
-6. **Start the Flask server**
+6. **Start the Dashboard**
    ```bash
-   python backend/app.py
+   bash scripts/run_dashboard.sh
    ```
 
 7. **Open the application**
@@ -148,21 +132,6 @@ indianpulse/
 - **Keyboard Shortcuts**: Ctrl+T to toggle theme
 - **Loading States**: Smooth loading indicators
 - **Error Handling**: User-friendly error messages
-
-## 🔧 API Endpoints
-
-### Indicators
-- `GET /api/v1/indicators/manifest` - Get all indicators metadata
-- `GET /api/v1/indicators/{id}/series` - Get time series data
-- `GET /api/v1/indicators/{id}/stats` - Get statistical summary
-- `GET /api/v1/indicators/compare` - Compare multiple indicators
-
-### Charts
-- `GET /api/v1/charts/{id}.png` - Generate PNG chart
-- `GET /api/v1/charts/export` - Export chart data
-
-### Health
-- `GET /api/v1/health` - Health check endpoint
 
 ## 🎯 Usage Examples
 
