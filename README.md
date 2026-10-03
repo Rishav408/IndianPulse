@@ -1,233 +1,173 @@
-# IndianPulse - Economic Dashboard
+# 🇮🇳 IndianPulse — India Economic Dashboard
 
-A modern, lightweight economic dashboard for India that visualizes key economic indicators using HTML/CSS/JavaScript frontend and Flask backend.
+A modern, full-stack economic data visualization platform for India. Features 11 key economic indicators spanning 15+ years, with interactive charts, multi-country comparison, and correlation analysis.
 
-## 🚀 Features
+[![Python](https://img.shields.io/badge/Python-3.10+-blue?logo=python&logoColor=white)](https://python.org)
+[![Flask](https://img.shields.io/badge/Flask-2.3+-black?logo=flask)](https://flask.palletsprojects.com/)
+[![License](https://img.shields.io/badge/License-MIT-yellow)](LICENSE)
 
-- **11 Key Economic Indicators**: GDP, CPI, GST, Unemployment, Forex Reserves, and more
-- **Interactive Charts**: Line, Area, Bar, and Scatter charts using Chart.js
-- **Real-time Data**: Time-series data with filtering and statistics
-- **Responsive Design**: Works on desktop, tablet, and mobile devices
-- **Dark/Light Theme**: Toggle between themes with persistent storage
-- **Export Functionality**: Export charts as PNG images
-- **Modern UI**: Clean, accessible interface with smooth animations
-
-## 🛠️ Tech Stack
-
-### Frontend
-- **Streamlit**: For modern, interactive web interface
-- **Plotly**: For advanced, interactive data visualizations
-- **Responsive Layout**: Native Streamlit container system
-
-### Backend
-- **Python 3.10+**
-- **Pandas**: For high-performance data processing
-- **NumPy**: For numerical computation
-- **Custom Data Processor**: Modular backend logic for economic indicators
+---
 
 ## 📁 Project Structure
 
 ```
-indianpulse/
-├── app/                       # Main Application files
-│   ├── dashboard.py           # Streamlit dashboard entry point
+IndianPulse/
+├── api_server.py               # 🌐 Flask REST API Server
+├── requirements.txt            # 📦 All Python dependencies
+├── README.md                   # 📖 This file
+│
+├── frontend/                   # 🎨 Custom Web Frontend (HTML/CSS/JS)
+│   ├── index.html              # Landing page
+│   ├── dashboard.html          # Interactive dashboard (Chart.js)
+│   ├── analytics.html          # Advanced analytics & correlation
+│   ├── comparison.html         # Country vs Country comparison
+│   └── data-analysis.svg       # UI asset
+│
+├── app/                        # ⚡ Streamlit Alternative Dashboard
+│   ├── dashboard.py            # Streamlit app entry point
 │   └── requirements-dashboard.txt
-├── backend/                   # Business logic and processing
-│   ├── data_processor.py      # Core data engine
-│   └── country_comparison.py  # Comparison modules
-├── data/                      # 📊 Economic indicators (CSV)
-├── docs/                      # 📚 Project documentation & guides
-├── scripts/                   # 🚀 Launch and management scripts
-│   ├── run_dashboard.sh       # Main launcher (Run this!)
-│   └── START_PROJECT.sh
-├── utils/                     # 🔧 Data generation utilities
-├── legacy/                    # 📜 Archived Flask application
-└── README.md                  # This file
+│
+├── backend/                    # 🧠 Data Processing Engine
+│   ├── data_processor.py       # Core ETL pipeline (Pandas)
+│   └── country_comparison.py   # World Bank API integration
+│
+├── data/                       # 📊 Unified Data Store
+│   ├── *.csv                   # 11 base economic indicator CSVs
+│   ├── comparisons/            # Country comparison output CSVs
+│   └── country_cache/          # Cached World Bank API responses
+│
+├── docs/                       # 📚 Documentation
+│   ├── ARCHITECTURE.md         # System architecture & data flow
+│   ├── COMPARISON_GUIDE.md     # Country comparison API reference
+│   ├── STREAMLIT_GUIDE.md      # Streamlit dashboard usage guide
+│   └── DVP PROJECT REPORT.docx # Full project report
+│
+├── scripts/                    # 🚀 Launchers & Utilities
+│   ├── start_web_app.sh        # Start Flask Web App (Bash)
+│   ├── run_streamlit.sh        # Start Streamlit Dashboard (Bash)
+│   └── verify_project.py       # Health check script (Python)
+│
+└── utils/                      # 🔧 Data Generation Utilities
+    ├── generate_csv_data.py    # Generate base indicator CSVs
+    └── generate_comparison_data.py  # Generate country comparison CSVs
 ```
+
+---
 
 ## 🚀 Quick Start
 
 ### Prerequisites
+- **Python 3.10+**
+- **pip**
 
-- Python 3.10 or higher
-- pip (Python package installer)
-
-### Installation
-
-1. **Clone the repository**
-   ```bash
-   git clone <repository-url>
-   cd indianpulse
-   ```
-
-2. **Create virtual environment**
-   ```bash
-   python -m venv venv
-   ```
-
-3. **Activate virtual environment**
-   
-   **Windows:**
-   ```bash
-   venv\Scripts\activate
-   ```
-   
-   **macOS/Linux:**
-   ```bash
-   source venv/bin/activate
-   ```
-
-4. **Install dependencies**
-   ```bash
-   pip install -r app/requirements-dashboard.txt
-   ```
-
-5. **Generate sample data**
-   ```bash
-   python utils/generate_csv_data.py
-   ```
-
-6. **Start the Dashboard**
-   ```bash
-   bash scripts/run_dashboard.sh
-   ```
-
-7. **Open the application**
-   
-   Navigate to `http://localhost:5000` in your web browser.
-
-## 📊 Available Indicators
-
-| Indicator | Description | Unit | Frequency | Source |
-|-----------|-------------|------|-----------|--------|
-| GDP Growth Rate | Quarterly GDP growth | % | Quarterly | RBI |
-| Consumer Price Index | Monthly inflation rate | Index | Monthly | MOSPI |
-| GST Collections | Monthly GST revenue | ₹ Crores | Monthly | CBIC |
-| Unemployment Rate | Monthly unemployment | % | Monthly | CMIE |
-| Foreign Exchange Reserves | Weekly forex reserves | USD Billion | Weekly | RBI |
-| Index of Industrial Production | Monthly IIP growth | Index | Monthly | MOSPI |
-| Repo Rate | Monthly repo rate | % | Monthly | RBI |
-| Trade Balance | Monthly trade balance | USD Million | Monthly | DGCI&S |
-| Financial Inclusion Index | Quarterly inclusion index | Index | Quarterly | RBI |
-| Digital Payment Volume | Monthly payment volume | ₹ Crores | Monthly | NPCI |
-| Composite Leading Indicator | Monthly leading indicator | Index | Monthly | OECD |
-
-## 🎨 Features Overview
-
-### Interactive Dashboard
-- **Indicator Selection**: Choose from 11 economic indicators
-- **Category Filtering**: Filter indicators by category (Growth, Inflation, Employment, etc.)
-- **Time Range Selection**: View data for 1 year, 2 years, 5 years, or custom range
-- **Chart Types**: Switch between Line, Area, Bar, and Scatter charts
-
-### Data Visualization
-- **Real-time Charts**: Interactive charts with hover tooltips
-- **Statistics Cards**: Key metrics including latest value, average, min/max
-- **Data Table**: Recent data points with change indicators
-- **Export Functionality**: Download charts as PNG images
-
-### User Experience
-- **Responsive Design**: Optimized for all screen sizes
-- **Theme Switching**: Toggle between light and dark themes
-- **Keyboard Shortcuts**: Ctrl+T to toggle theme
-- **Loading States**: Smooth loading indicators
-- **Error Handling**: User-friendly error messages
-
-## 🎯 Usage Examples
-
-### View GDP Growth Rate
-1. Select "GDP Growth Rate" from the indicator list
-2. Choose "5 Years" time range
-3. Select "Line" chart type
-4. Click "Update Chart"
-
-### Compare Multiple Indicators
-1. Select indicators from different categories
-2. Use the compare functionality (coming soon)
-3. View trends across different economic sectors
-
-### Export Chart
-1. Load any indicator data
-2. Click the "Export" button
-3. Download as PNG image
-
-## 🛠️ Development
-
-### Running in Development Mode
-
+### 1. Clone & Install
 ```bash
-# Start Flask with debug mode
-export FLASK_DEBUG=True
-python backend/app.py
+git clone <repository-url>
+cd IndianPulse
+pip install -r requirements.txt
 ```
 
-### Generating New Sample Data
-
+### 2. Generate Data (first time only)
 ```bash
-# Generate fresh sample data
-python backend/data/generator.py --generate
+# Generate the 11 base indicator CSVs
+python utils/generate_csv_data.py
+
+# (Optional) Generate country comparison datasets
+python utils/generate_comparison_data.py
 ```
 
-### Code Structure
+### 3. Launch
 
-- **Frontend**: Modular JavaScript with ES6+ features
-- **Backend**: Flask with blueprints for organization
-- **Data**: Pandas-based data generation and processing
-- **Charts**: Chart.js integration with custom styling
-
-## 🚀 Deployment
-
-### Local Production
-
+**Option A — Web Application (Flask + HTML/JS Dashboard)**
 ```bash
-# Install gunicorn
-pip install gunicorn
-
-# Run with gunicorn
-gunicorn -w 4 -b 0.0.0.0:8000 backend.app:app
+python api_server.py
+# Open: http://localhost:5000
 ```
 
-### Cloud Deployment
+**Option B — Streamlit Dashboard (Python-only)**
+```bash
+streamlit run app/dashboard.py
+# Open: http://localhost:8501
+```
 
-The application can be deployed to:
-- **Heroku**: Use the included `Procfile`
-- **Render**: Deploy directly from GitHub
-- **Railway**: One-click deployment
-- **DigitalOcean**: App Platform deployment
+### 4. Verify Everything is Working
+```bash
+python scripts/verify_project.py
+```
 
-## 📈 Data Sources
+---
 
-The application uses realistic synthetic data based on:
-- **RBI** (Reserve Bank of India)
-- **MOSPI** (Ministry of Statistics and Programme Implementation)
-- **CBIC** (Central Board of Indirect Taxes and Customs)
-- **CMIE** (Centre for Monitoring Indian Economy)
-- **DGCI&S** (Directorate General of Commercial Intelligence and Statistics)
-- **NPCI** (National Payments Corporation of India)
-- **OECD** (Organisation for Economic Co-operation and Development)
+## 🌐 Web Application Pages
+
+| URL | Page |
+|:----|:-----|
+| `http://localhost:5000` | 🏠 Landing Page |
+| `http://localhost:5000/dashboard` | 📊 Main Dashboard |
+| `http://localhost:5000/analytics` | 📈 Advanced Analytics |
+| `http://localhost:5000/comparison.html` | 🌍 Country Comparison |
+
+---
+
+## 📊 Economic Indicators
+
+| Indicator | Frequency | Source | Unit |
+|:----------|:----------|:-------|:-----|
+| GDP Growth Rate | Quarterly | RBI | % |
+| Consumer Price Index | Monthly | MOSPI | Index / % |
+| GST Collections | Monthly | CBIC | ₹ Crores |
+| Unemployment Rate | Monthly | CMIE | % |
+| Foreign Exchange Reserves | Monthly | RBI | USD Billion |
+| Index of Industrial Production (IIP) | Monthly | MOSPI | % YoY |
+| Repo Rate | Monthly | RBI | % |
+| Trade Balance | Monthly | DGCI&S | USD Billion |
+| Financial Inclusion Index | Annual | RBI | Index |
+| Digital Payment Volume (UPI) | Monthly | NPCI | Million / ₹ Crores |
+| Composite Leading Indicator | Quarterly | OECD | Index |
+
+---
+
+## 🛠️ Tech Stack
+
+### Web Frontend
+- **HTML5 + CSS3** with Tailwind CSS utility classes
+- **Chart.js** — Interactive line, bar, area, and radar charts
+- **AOS** — Smooth scroll animations
+- **Font Awesome** — Icons
+
+### Backend REST API
+- **Flask** — Lightweight Python web framework
+- **Flask-CORS** — Cross-origin resource sharing
+- **Pandas + NumPy** — Data processing and statistical calculations
+
+### Streamlit Dashboard (Alternative)
+- **Streamlit** — Python-first dashboard framework
+- **Plotly** — Interactive charting library
+
+---
+
+## 📚 Documentation
+
+| Document | Description |
+|:---------|:------------|
+| [ARCHITECTURE.md](docs/ARCHITECTURE.md) | System architecture, data flow diagrams, and chart types |
+| [COMPARISON_GUIDE.md](docs/COMPARISON_GUIDE.md) | Country comparison feature API reference |
+| [STREAMLIT_GUIDE.md](docs/STREAMLIT_GUIDE.md) | Streamlit dashboard usage guide |
+
+---
 
 ## 🤝 Contributing
 
 1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
+2. Create a feature branch: `git checkout -b feature/amazing-feature`
+3. Commit your changes: `git commit -m "Add amazing feature"`
+4. Push to the branch: `git push origin feature/amazing-feature`
 5. Open a Pull Request
 
-## 📝 License
+---
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+## ⚠️ Disclaimer
 
-## 🙏 Acknowledgments
-
-- **Chart.js** for excellent charting capabilities
-- **Flask** for the lightweight web framework
-- **Pandas** for powerful data manipulation
-- **Indian Government** for economic data inspiration
-
-## 📞 Support
-
-For support, email support@indianpulse.com or create an issue in the repository.
+This project uses **synthetic/sample data** inspired by real Indian economic indicators (RBI, MOSPI, CBIC, CMIE, NPCI, OECD). Data should not be used for real financial or policy decision-making.
 
 ---
 

@@ -7,12 +7,15 @@ import pandas as pd
 import numpy as np
 from datetime import datetime
 from typing import Dict, List, Tuple, Optional
+import os
 
 
 class EconomicDataProcessor:
     """Process and clean economic indicator data"""
     
-    def __init__(self, data_dir: str = "data"):
+    def __init__(self, data_dir: str = None):
+        if data_dir is None:
+            data_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "data"))
         self.data_dir = data_dir
         self.datasets = {}
         self.load_all_data()

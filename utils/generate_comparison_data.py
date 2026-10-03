@@ -4,6 +4,15 @@ Creates comprehensive comparison datasets for India vs other major economies
 """
 
 import sys
+import io
+
+# Ensure UTF-8 output encoding for emojis on Windows
+if sys.stdout.encoding != 'utf-8':
+    try:
+        sys.stdout.reconfigure(encoding='utf-8')
+    except AttributeError:
+        pass
+
 sys.path.append('.')
 from backend.country_comparison import CountryComparison
 import pandas as pd

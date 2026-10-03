@@ -40,7 +40,9 @@ class CountryComparison:
         'trade_gdp': 'NE.TRD.GNFS.ZS',  # Trade (% of GDP)
     }
     
-    def __init__(self, data_dir: str = "data"):
+    def __init__(self, data_dir: str = None):
+        if data_dir is None:
+            data_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "data"))
         self.data_dir = data_dir
         self.cache_dir = os.path.join(data_dir, 'country_cache')
         os.makedirs(self.cache_dir, exist_ok=True)
